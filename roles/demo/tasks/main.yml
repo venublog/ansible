@@ -1,0 +1,6 @@
+---
+# tasks file for demo
+- name: Invoke Python 
+  command: python  ./roles/demo/files/sample.py
+#  args:
+#    chdir: "{{ role_path }}"/files 
