@@ -1,0 +1,25 @@
+---
+# tasks file for roles/mdopen
+- name: "Install Openidc installation package"
+  yum:
+    name:  "{{ item }}"
+    state: present
+    validate_certs: no
+  become: yes
+  become_user: root
+  with_items:
+    - mod_auth_openidc
+    - mod_ssl 
+
+- name: Template Openidc configuration
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: 0755
+  with_items:
+    - { src: 'openidc.conf.j2', dest: '/etc/httpd/conf.d/openidc.conf' }
+  notify:
+    - restart httpd
+
