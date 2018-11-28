@@ -1,0 +1,14 @@
+---
+# vars file for roles/mdopen
+#openidc:
+oid_listen_port: 8443
+oid_servername: oidcexample.livetv-ifs.com
+oid_ssl_cert_file: /etc/pki/tls/certs/localhost.crt
+oid_ssl_key_file: /etc/pki/tls/private/localhost.key
+oid_metadata_url: https://quicksilver.livetv-ifs.com:44380/identity/.well-known/openid-configuration
+oid_client_id: 3b58f00a-3fbf-4a35-b624-4b4893589874
+oid_client_secert: 6157279f-15ec-44f3-9f7d-3d50a63a966a
+oid_redirect_url: https://oidcexample.livetv-ifs.com:8443/redirect_uri
+oid_crpto_pass: test
+oid_scope: openid email roles
+oid_require_claim: role:Thales
