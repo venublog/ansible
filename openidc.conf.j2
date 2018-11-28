@@ -1,0 +1,25 @@
+LoadModule auth_openidc_module modules/mod_auth_openidc.so
+Listen {{ oid_listen_port }}
+<VirtualHost *>
+    ServerName {{ oid_servername }}
+    SSLEngine on
+    SSLCertificateFile {{ oid_ssl_cert_file }}
+    SSLCertificateKeyFile {{ oid_ssl_key_file }}
+
+    OIDCProviderMetadataURL {{ oid_metadata_url }}
+    OIDCClientID {{ oid_client_id }}
+    OIDCClientSecret {{ oid_client_secert }}
+    OIDCRedirectURI {{ oid_redirect_url }}
+    OIDCResponseMode form_post
+    #OIDCJWKSRefreshInterval 3600
+    OIDCCryptoPassphrase {{ oid_crpto_pass }}
+    OIDCScope "{{ oid_scope }}"
+
+    <Location />
+       AuthType openid-connect
+       <RequireAll>
+          Require valid-user
+          Require claim {{ oid_require_claim }}
+       </RequireAll>
+    </Location>
+</VirtualHost>

@@ -5,3 +5,19 @@
    - ../group_vars/oid_vars
   roles:
     - mdopen
+
+- hosts: 127.0.0.1
+  connection: local
+  become: yes
+  vars_files:
+   - ../group_vars/oid_vars
+  tasks:
+   - template:
+       src: "{{ item.src }}"
+       dest: "{{ item.dest }}"
+       backup: yes
+       owner: root
+       group: root
+       mode: 0755
+     with_items:
+       - { src: 'openidc.conf.j2', dest: '/etc/httpd/conf.d/openidc.conf' }
