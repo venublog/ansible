@@ -11,24 +11,8 @@
     - mod_auth_openidc
     - mod_ssl 
 
-#- name: make an exception for selinux
-#  command: setsebool httpd_can_network_connect=on
 - name: Set httpd_can_network_connect flag on and keep it persistent across reboots
   seboolean:
     name: httpd_can_network_connect
     state: yes
     persistent: yes
-
-- name: Template Openidc configuration
-  template:
-    src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
-    backup: yes
-    owner: root
-    group: root
-    mode: 0755
-  with_items:
-    - { src: 'openidc.conf.j2', dest: '/etc/httpd/conf.d/openidc.conf' }
-  notify:
-    - restart httpd
-
