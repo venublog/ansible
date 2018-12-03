@@ -2,7 +2,7 @@
   connection: local
   become: yes
   vars_files:
-   - ../group_vars/oid_vars
+   - ./oid_vars
   roles:
     - mdopen
 
@@ -10,7 +10,7 @@
   connection: local
   become: yes
   vars_files:
-   - ../group_vars/oid_vars
+   - ./oid_vars
   tasks:
    - template:
        src: "{{ item.src }}"

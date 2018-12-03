@@ -1,0 +1,4 @@
+- name: Install ARA with default settings
+  hosts: localhost
+  roles:
+    - ara
