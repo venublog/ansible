@@ -1,0 +1,68 @@
+---
+#  Copyright (c) 2018 Red Hat, Inc.
+#
+#  This file is part of ARA Records Ansible.
+#
+#  ARA is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  ARA is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with ARA.  If not, see <http://www.gnu.org/licenses/>.
+
+ara:
+  install:
+    # The method used to install ARA ('pip' or 'distribution')
+    method: pip
+    pip:
+      # If ARA should be installed inside a virtualenv
+      virtualenv: true
+      # Location where the virtualenv should be installed
+      virtualenv_path: /opt/ara-venv
+      # Method to install ARA with pip ('pypi' or 'source')
+      method: pypi
+      # When installing from source, location of the repository
+      # When installing from a source on the filesystem, only specify the path to the repository
+      source: git+https://git.openstack.org/openstack/ara
+      # When installing from pypi, version to install (ex: '0.15.0')
+      # When installing from source, ref to the commit, tag or branch to install
+      # Defaults to the latest version on PyPi or the master branch when installing from source
+      version:
+  config:
+    # If pymysql or psycopg2 are found in the connection string, the role will install the necessary driver
+    database: "sqlite:////var/lib/ara/ansible.sqlite"
+    # Host to listen on for embedded server, apache or nginx
+    host: 127.0.0.1
+    # Port to listen on for embedded server or apache
+    port: 9191
+    # Root (or prefix) for the web application location
+    application_root: /
+    # Directory where files are stored by default
+    dir: /var/lib/ara
+    # Path to the logging configuration
+    logconfig: /etc/ara/logging.yml
+    # Path where logs are stored
+    logdir: /var/log/ara
+    # Name of the log file
+    logfile: ara.log
+  deployment:
+    # Server (apache, embedded, nginx)
+    server: embedded
+    # Type (mod_wsgi, standalone, embedded-proxy, etc.)
+    type: standalone
+    nginx:
+      # Where nginx will store the proxy cache
+      cache_directory: /var/cache/nginx
+
+# You can use a variable called ara_override to use custom configuration
+# parameters.
+
+# ara_override:
+#   config:
+#     database: "mysql+pymysql://ara:password@localhost/ara"

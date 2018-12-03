@@ -1,0 +1,163 @@
+---
+#  Copyright (c) 2018 Red Hat, Inc.
+#
+#  This file is part of ARA Records Ansible.
+#
+#  ARA is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  ARA is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with ARA.  If not, see <http://www.gnu.org/licenses/>.
+
+- name: Include OS family/distribution specific variables
+  include_vars: "{{ item }}"
+  with_first_found:
+    - "{{ ansible_distribution }}.yml"
+    - "{{ ansible_os_family }}.yml"
+
+- name: Override default variables
+  set_fact:
+    ara: "{{ ara | combine(ara_override, recursive=true) }}"
+  when:
+    - ara_override is defined
+    - ara_override is mapping
+
+- name: Include ARA installation
+  include_tasks: "install/{{ ara.install.method }}.yml"
+
+- name: Create user for ARA
+  become: true
+  user:
+    name: ara
+    comment: User for ARA Records Ansible
+    shell: /sbin/nologin
+    home: /var/lib/ara
+
+- name: Create ARA directories
+  become: true
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: ara
+    group: ara
+    mode: 0750
+  with_items:
+    - /var/log/ara
+    - /var/lib/ara
+    - /etc/ara
+
+- name: Setup ARA logrotate
+  become: true
+  template:
+    src: logrotate.conf.j2
+    dest: /etc/logrotate.d/ara
+
+- name: Get the location of ara-manage
+  command: which ara-manage
+  environment:
+    PATH: "{{ path_with_virtualenv | default(omit) }}"
+  register: ara_manage
+  changed_when: false
+
+- name: Copy systemd service template
+  become: true
+  template:
+    src: templates/ara_service.conf.j2
+    dest: /etc/systemd/system/ara.service
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - reload systemctl daemon
+    - restart ara
+
+- name: Flush handlers
+  meta: flush_handlers
+
+- name: Include web server configuration
+  include_tasks: "{{ ara.deployment.server }}/{{ ara.deployment.type }}.yml"
+
+- name: Create the ARA configuration file
+  become: true
+  ini_file:
+    path: /etc/ara/ara.cfg
+    section: ara
+    option: "{{ item.key }}"
+    value: "{{ item.value }}"
+    create: yes
+    owner: ara
+    group: ara
+    mode: 0640
+  with_dict: "{{ ara.config }}"
+  notify:
+    - restart ara
+    - restart nginx
+
+- name: Get ARA's installed location
+  command: python -m ara.setup.path
+  environment:
+    PATH: "{{ path_with_virtualenv | default(omit) }}"
+  register: ara_location
+  changed_when: false
+
+- name: Enable ARA Ansible configuration
+  become: true
+  ini_file:
+    dest: /etc/ara/ara.cfg
+    section: defaults
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+  with_items:
+    - { option: local_tmp, value: /var/lib/ara/.ansible/ }
+    - { option: callback_plugins, value: "{{ ara_location.stdout }}/plugins/callbacks" }
+    - { option: action_plugins, value: "{{ ara_location.stdout }}/plugins/actions" }
+
+- name: Dump the role configuration
+  become: true
+  copy:
+    dest: /etc/ara/ansible-role-ara.yml
+    content: |
+      {{ ara | to_nice_yaml(indent=4) }}
+      {% if ara_override is defined -%}
+      {{ ara_override | to_nice_yaml(indent=4) }}
+      {% endif -%}
+    owner: ara
+    group: ara
+    mode: 0640
+
+- name: Set the web application URL
+  set_fact:
+    webapp_url: "http://{{ ara.config.host_proxy | default(ara.config.host) }}:{{ ara.config.port_proxy | default(ara.config.port) }}"
+
+- name: Provide web application URL
+  vars:
+    msg: >-
+      ARA was installed successfully !
+      The web application should now be reachable at the following address:
+      {{ webapp_url }}
+  debug:
+    msg: "{{ msg.split('\n') }}"
+
+- name: Provide instructions
+  vars:
+    msg: >-
+      You can find the configuration that was used for the execution of this role in /etc/ara/ansible-role-ara.yml.
+      You can edit the configuration and re-run your ansible-playbook command with "--extra-vars @/etc/ara/ansible-role-ara.yml".
+
+      A configuration file for Ansible and ARA was set up automatically in /etc/ara/ara.cfg.
+      The ARA service is already using this configuration file but you'll need to make sure Ansible is using it so that Ansible knows where ARA is located.
+
+      This can be done by exporting the ANSIBLE_CONFIG environment variable, like so:
+      $ export ANSIBLE_CONFIG=/etc/ara/ara.cfg
+      $ ansible-playbook playbook.yml
+
+      Data from recorded playbooks will be available in the interface as soon as you run your first ansible-playbook command.
+  debug:
+    msg: "{{ msg.split('\n') }}"

@@ -1,0 +1,44 @@
+---
+#  Copyright (c) 2018 Red Hat, Inc.
+#
+#  This file is part of ARA Records Ansible.
+#
+#  ARA is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  ARA is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with ARA.  If not, see <http://www.gnu.org/licenses/>.
+
+required_packages:
+  - gcc
+  - libffi-devel
+  - libselinux-python
+  - libxml2-devel
+  - libxslt-devel
+  - openssl-devel
+  - python-devel
+  - python-setuptools
+  - python-virtualenv
+  - redhat-rpm-config
+  - which
+
+required_wsgi_packages:
+  - httpd
+  - mod_wsgi
+
+apache_service: httpd
+apache_user: apache
+apache_group: apache
+apache_log_path: /var/log/httpd
+apache_config_path: /etc/httpd/conf.d
+
+nginx_user: nginx
+nginx_group: nginx
+nginx_config_path: /etc/nginx/conf.d
