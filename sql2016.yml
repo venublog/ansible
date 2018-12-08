@@ -1,0 +1,15 @@
+- name: Install SQL 2016
+  hosts: all
+  vars:
+    ansible_connection: winrm
+    ansible_winrm_server_cert_validation: ignore
+    install_with: ini
+    iso_path: "{{ ansible_env.TEMP }}\\sql2016.iso"
+    iso_url: https://download.microsoft.com/download/9/0/7/907AD35F-9F9C-43A5-9789-52470555DB90/ENU/SQLServer2016SP1-FullSlipstream-x64-ENU.iso
+    ansible_winrm_transport: "credssp"
+    ansible_ssh_user: Administrator
+    ansible_ssh_pass: Curry0000%
+    mssql_username: mssqluser
+    mssql_password: Curry0000%
+  roles:
+    - role: sql2016
