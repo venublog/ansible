@@ -31,26 +31,42 @@
     - C:\Backup
     - C:\Databases
     - C:\UserDatabases
+    - C:\iso_download
 
-- name: check ISO file
-  win_stat:
-    path: "{{ iso_path }}"
-  register: iso_file
-  when: (":" in iso_path)
-
-- name: download ISO file
-  win_get_url:
-    dest: "{{ iso_path }}"
-    url: "{{ iso_url }}"
-  register: download_iso
-  until: download_iso is success
-  delay: 3
-  retries: 5
-  when: (":" in iso_path) and (not iso_file.stat.exists)
+#- name: check ISO file
+#  win_stat:
+#    path: "{{ iso_path }}"
+#  register: iso_file
+#  when: (":" in iso_path)
+#
+#- name: download ISO file
+#  win_get_url:
+#    dest: "{{ iso_path }}"
+#    url: "{{ iso_url }}"
+#  register: download_iso
+#  until: download_iso is success
+#  delay: 3
+#  retries: 5
+#  when: (":" in iso_path) and (not iso_file.stat.exists)
+#- name: get s3 file
+#  aws_s3:
+#    aws_access_key: AKIAJM3SBEF3PKO6FI4A
+#    aws_secret_key: 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
+#    bucket: mssql2016-test
+#    object: SQLServer2016SP1-FullSlipstream-x64-ENU.iso
+#    dest: /tmp/win_mssql_2016.iso
+#    mode: get
+#  delegate_to: localhost
+#
+- name: copy to win server
+  win_copy:
+    src: /tmp/win_mssql_2016.iso
+    dest: C:\iso_download\win_mssql_2016.iso
 
 - name: mount iso
   win_disk_image:
-    image_path: "{{ iso_path }}"
+    #image_path: "{{ iso_path }}"
+    image_path: C:\iso_download\win_mssql_2016.iso
     state: present
   register: disk_image_out
 
@@ -62,7 +78,8 @@
 
 - name: unmount iso
   win_disk_image:
-    image_path: "{{ iso_path }}"
+    #image_path: "{{ iso_path }}"
+    image_path: C:\iso_download\win_mssql_2016.iso
     state: absent
 
 - name: copy script file
