@@ -1,0 +1,15 @@
+- name: Install SQL 2016
+  hosts: all
+  gather_facts: no
+  vars:
+    ansible_user: 'Administrator'
+    ansible_password: 'Curry0000%'
+    #ansible_port: 5986
+    ansible_connection: winrm
+    #ansible_winrm_transport: credssp
+    #ansible_winrm_transport: basic
+    ansible_winrm_server_cert_validation: ignore
+    #ansible_winrm_message_encryption: auto
+  
+  #roles:
+  #  - role: win_sql2016

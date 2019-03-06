@@ -1,0 +1,98 @@
+---
+# tasks file for new_ara
+- name: Installing prereq
+  yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - "{{ required_packages }}"
+
+- name: Creating user group
+  group:
+    name: ara
+    state: present
+
+- name: Creating ara user
+  user:
+    name: ara
+    group: ara
+    state: present
+
+- name: Installing ara
+  pip:
+    name: ara
+
+- name: creating service file for ara
+  template:
+    #src: templates/ara/service.conf.j2
+    src: service.conf.j2
+    dest: /etc/systemd/system/ara.service
+    owner: ara
+    group: ara
+    mode: 0755
+  notify:
+    - reload systemctl daemon
+
+- name: Create ARA directories
+  become: true
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: ara
+    group: ara
+    mode: 0755
+  with_items:
+    - /var/log/ara
+    - /etc/ara
+
+- name: Create ARA directories
+  become: true
+  file:
+    path: /var/lib/ara/.ansible/
+    state: directory
+    owner: ara
+    group: ara
+    mode: 0777
+  with_items:
+    - /var/lib/ara
+    - /var/lib/ara/.ansible/ 
+
+- name: Create ARA directories
+  become: true
+  file:
+    path: /var/log/ara/ara.log
+    state: touch
+    owner: ara
+    group: ara
+    mode: 0777
+
+- name: Create the ARA configuration file
+  become: true
+  ini_file:
+    path: /etc/ara/ara.cfg
+    section: ara
+    option: "{{ item.key }}"
+    value: "{{ item.value }}"
+    create: yes
+    owner: ara
+    group: ara
+    mode: 0644
+  with_dict: "{{ ara.config }}"
+  notify:
+    - reload systemctl daemon
+    - restart ara
+
+- name: ara configuration
+  command: "{{ item }}"
+  with_items:
+    - python -m ara.setup.path
+    - python -m ara.setup.action_plugins
+    - python -m ara.setup.callback_plugins
+    #- python -m ara.setup.library
+
+- name: start and enable ara
+  service:
+    name: ara
+    enabled: yes
+    state: started
+

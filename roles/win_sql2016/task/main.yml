@@ -1,0 +1,16 @@
+- name: set up sqladmin user
+  win_user:
+    name: "{{ mssql_username }}"
+    password: "{{ mssql_password }}"
+    password_never_expires: True
+    state: present
+    groups:
+      - Administrators
+
+- name: Windows Update
+  win_updates:
+    reboot: true
+    category_names:
+      - SecurityUpdates
+      - CriticalUpdates
+      - UpdateRollups

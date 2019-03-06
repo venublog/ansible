@@ -1,0 +1,9 @@
+- hosts: all
+  #connection: local
+  become: yes
+  become_method: sudo
+  vars_files:
+   - ../group_vars/ara
+  roles:
+    - new_ara
+
