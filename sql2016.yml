@@ -1,0 +1,37 @@
+
+- name:  S3 modeule
+  hosts: 127.0.0.1
+  connection: local
+  tasks:
+    - name: Get S3 file
+      aws_s3:
+        bucket: mssql2016-test
+        object: SQLServer2016SP1-FullSlipstream-x64-ENU.iso
+        dest: /tmp/win_mssql_2016.iso
+        mode: get
+      #delegate_to: localhost
+
+- name: Install SQL 2016
+  hosts: all
+  vars:
+    ansible_connection: winrm
+    ansible_winrm_server_cert_validation: ignore
+    install_with: ini
+    iso_path: "{{ ansible_env.TEMP }}\\sql2016.iso"
+    iso_url: https://download.microsoft.com/download/9/0/7/907AD35F-9F9C-43A5-9789-52470555DB90/ENU/SQLServer2016SP1-FullSlipstream-x64-ENU.iso
+    ansible_winrm_transport: "credssp"
+    ansible_ssh_user: Administrator
+    ansible_ssh_pass: Curry0000%
+    mssql_username: mssqluser
+    mssql_password: Curry0000%
+  roles:
+    - role: sql2016
+
+- name:  S3 modeule
+  hosts: 127.0.0.1
+  connection: local
+  tasks:
+    - name: Get S3 file
+      file:
+       path: /tmp/win_mssql_2016.iso
+       state: absent 
