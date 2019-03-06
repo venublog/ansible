@@ -48,7 +48,7 @@
 - name: Create ARA directories
   become: true
   file:
-    path: /var/lib/ara/.ansible/
+    path: "{{ item }}"
     state: directory
     owner: ara
     group: ara
